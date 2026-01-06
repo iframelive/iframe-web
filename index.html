@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DaddyHD STREAM PLAYER - API DIRECT</title>
+    <title>DaddyHD Stream Player</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #1a1a1a;
             color: #fff;
@@ -19,9 +19,13 @@
         }
         h1 { font-size: 28px; color: #00a8ff; text-transform: uppercase; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
-        .main-content { }
-        .sidebar { background: #2d2d2d; padding: 20px; border-radius: 10px; border: 1px solid #444; }
+        .layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+        .sidebar {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
         .controls {
             background: #2d2d2d;
             padding: 20px;
@@ -81,7 +85,7 @@
             height: 0;
             overflow: hidden;
         }
-        .player-container iframe, .player-container video {
+        .player-container iframe {
             position: absolute;
             top: 0;
             left: 0;
@@ -112,9 +116,17 @@
             color: #6496ff;
             border: 1px solid #6496ff;
         }
+        .search-box {
+            margin-bottom: 10px;
+        }
+        .search-box input {
+            width: 100%;
+            min-width: 0;
+        }
         .channels-list {
             max-height: 600px;
             overflow-y: auto;
+            margin-top: 10px;
         }
         .channel-btn {
             width: 100%;
@@ -127,7 +139,7 @@
             font-size: 12px;
             text-align: left;
             margin-bottom: 5px;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
         .channel-btn:hover {
             background: #00a8ff;
@@ -139,248 +151,194 @@
             color: #000;
             border-color: #00a8ff;
         }
-        .info {
-            background: #2d2d2d;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #444;
+        .channel-name {
+            display: block;
             font-size: 13px;
-            line-height: 1.8;
+            font-weight: 600;
         }
-        .info code {
-            background: #1a1a1a;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            color: #00ff00;
+        .channel-meta {
+            display: block;
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 3px;
         }
         @media (max-width: 768px) {
             .layout { grid-template-columns: 1fr; }
             .sidebar { order: -1; }
         }
     </style>
-
-    <!-- Bloque de contraseña ofuscada: PutaSevilla1 -> base64 -->
-    <script>
-        const PASS_B64 = 'UHV0YVNldmlsbGEx';
-
-        function decodePass(b64) {
-            try {
-                return atob(b64);
-            } catch (e) {
-                return '';
-            }
-        }
-
-        function pedirPassword() {
-            const realPass = decodePass(PASS_B64);
-            const maxIntentos = 3;
-            let intento = 0;
-            let ok = false;
-
-            while (intento < maxIntentos && !ok) {
-                const p = prompt('Introduce la contraseña para acceder:', '');
-                if (p === null) break; // Cancelar
-
-                if (p === realPass) {
-                    ok = true;
-                } else {
-                    intento++;
-                    alert('Contraseña incorrecta (' + intento + '/' + maxIntentos + ')');
-                }
-            }
-
-            if (!ok) {
-                document.body.innerHTML =
-                    '<div style="color:#fff;background:#000;height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;">' +
-                    'Acceso denegado' +
-                    '</div>';
-            }
-        }
-
-        window.addEventListener('load', pedirPassword);
-    </script>
 </head>
 <body>
-    <header>
-        <h1>📺 DaddyHD STREAM PLAYER - API DIRECT</h1>
-    </header>
+<header>
+    <h1>📺 DaddyHD Stream Player</h1>
+</header>
 
-    <div class="container">
-        <div class="layout">
-            <div class="main-content">
-                <div class="controls">
-                    <div class="input-group">
-                        <input type="text" id="channelId" placeholder="Ingresa Channel ID (ej: 302)">
-                        <select id="folderType">
-                            <option value="stream">stream</option>
-                            <option value="cast">cast</option>
-                            <option value="watch">watch</option>
-                            <option value="plus">plus</option>
-                            <option value="casting">casting</option>
-                            <option value="player">player</option>
-                        </select>
-                        <button onclick="loadChannel()">Cargar Canal</button>
-                        <button onclick="clearStream()" class="secondary">Limpiar</button>
-                    </div>
-                    <div class="status" id="status"></div>
+<div class="container">
+    <div class="layout">
+        <div class="main-content">
+            <div class="controls">
+                <div class="input-group">
+                    <input type="text" id="channelId" placeholder="Channel ID (ej: 302)">
+                    <select id="folderType">
+                        <option value="stream">stream</option>
+                        <option value="cast">cast</option>
+                        <option value="watch">watch</option>
+                        <option value="plus">plus</option>
+                        <option value="casting">casting</option>
+                        <option value="player">player</option>
+                    </select>
+                    <button onclick="loadChannel()">Cargar Canal</button>
+                    <button onclick="clearStream()" class="secondary">Limpiar</button>
                 </div>
-
-                <div class="player">
-                    <div class="player-title" id="playerTitle">Selecciona un canal para reproducir</div>
-                    <div class="player-container" id="playerContainer">
-                        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#aaa; text-align: center;">
-                            <div style="font-size: 14px;">📺</div>
-                            <div style="font-size: 12px; margin-top: 10px;">Ingresa un Channel ID y pulsa "Cargar Canal"</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info">
-                    <strong>⚙️ Cómo funciona:</strong><br>
-                    1. Ingresa un <code>Channel ID</code> (ej: 302)<br>
-                    2. Selecciona el tipo de carpeta (stream, cast, watch, etc)<br>
-                    3. Pulsa "Cargar Canal"<br>
-                    4. ¡El stream se cargará directamente!<br>
-                    <br>
-                    <strong>✨ API Directa de DaddyHD:</strong><br>
-                    ✓ Sin servidor intermediario<br>
-                    ✓ Conexión directa a dlhd.dad<br>
-                    ✓ Múltiples carpetas/tipos disponibles<br>
-                    ✓ Rápido y sin complicaciones<br>
-                    <br>
-                    <strong>🔗 URLs Válidas:</strong><br>
-                    <code>https://dlhd.dad/stream/stream-{ID}.php</code><br>
-                    <code>https://dlhd.dad/cast/stream-{ID}.php</code><br>
-                    <code>https://dlhd.dad/watch/stream-{ID}.php</code><br>
-                </div>
+                <div class="status" id="status"></div>
             </div>
 
-            <div class="sidebar">
-                <strong style="color: #00a8ff; display: block; margin-bottom: 15px;">📋 CANALES RÁPIDOS</strong>
-                <div class="channels-list" id="channelsList">
-                    <div style="color: #aaa; font-size: 12px;">Cargando canales...</div>
+            <div class="player">
+                <div class="player-title" id="playerTitle">Selecciona un canal para reproducir</div>
+                <div class="player-container" id="playerContainer">
+                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#aaa; text-align: center;">
+                        <div style="font-size: 14px;">📺</div>
+                        <div style="font-size: 12px; margin-top: 10px;">Busca un canal o ingresa un ID</div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="sidebar">
+            <strong style="color:#00a8ff; display:block; margin-bottom:10px;">🔎 BUSCAR CANAL</strong>
+            <div class="search-box">
+                <input type="text" id="searchChannel" placeholder="Escribe nombre del canal...">
+            </div>
+            <div class="channels-list" id="channelsList">
+                <div style="color:#aaa; font-size:12px;">Cargando canales...</div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script>
-        const popularChannels = [
-            { id: '302', name: 'Sport 1' },
-            { id: '307', name: 'Sport 2' },
-            { id: '308', name: 'Sport 3' },
-            { id: '310', name: 'NBA' },
-            { id: '311', name: 'NFL' },
-            { id: '312', name: 'Premier League' },
-            { id: '313', name: 'La Liga' },
-            { id: '314', name: 'Serie A' },
-            { id: '315', name: 'Bundesliga' },
-            { id: '320', name: 'Fight 1' },
-            { id: '321', name: 'Fight 2' },
-            { id: '330', name: 'Movies' },
-            { id: '340', name: 'Entertainment' },
-            { id: '277', name: 'Multi Feed' },
-            { id: '261', name: 'BBFeed 1' }
-        ];
+<script>
+    var allChannels = [];
 
-        function showStatus(msg, type = 'info') {
-            const status = document.getElementById('status');
-            status.textContent = msg;
-            status.className = 'status ' + type;
-            status.style.display = 'block';
-            if (type !== 'error') {
-                setTimeout(function () { status.style.display = 'none'; }, 6000);
-            }
-        }
-
-        function renderChannelsList() {
-            const list = document.getElementById('channelsList');
-            list.innerHTML = popularChannels.map(function (ch) {
-                return (
-                    '<button class="channel-btn" onclick="selectChannel(\'' + ch.id + '\', \'' + ch.name + '\')">' +
-                        '<span style="color: #00a8ff;">ID: ' + ch.id + '</span><br>' +
-                        '<span style="color: #aaa; font-size: 11px;">' + ch.name + '</span>' +
-                    '</button>'
-                );
-            }).join('');
-        }
-
-        function selectChannel(id, name) {
-            document.getElementById('channelId').value = id;
-            showStatus('✓ Canal seleccionado: ' + name + ' (ID: ' + id + ')', 'success');
-            setTimeout(loadChannel, 500);
-        }
-
-        function loadChannel() {
-            const channelId = document.getElementById('channelId').value.trim();
-            const folderType = document.getElementById('folderType').value;
-
-            if (!channelId) {
-                showStatus('❌ Por favor ingresa un Channel ID', 'error');
-                return;
-            }
-
-            if (!/^\d+$/.test(channelId)) {
-                showStatus('❌ El Channel ID debe ser numérico', 'error');
-                return;
-            }
-
-            const streamUrl = 'https://dlhd.dad/' + folderType + '/stream-' + channelId + '.php';
-
-            showStatus('✓ Cargando stream...', 'success');
-            document.getElementById('playerTitle').textContent =
-                '📺 Canal #' + channelId + ' - ' + folderType;
-
-            const container = document.getElementById('playerContainer');
-            container.innerHTML =
-                '<iframe ' +
-                    'src="' + streamUrl + '" ' +
-                    'style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" ' +
-                    'allowfullscreen ' +
-                    'allow="autoplay">' +
-                '</iframe>';
-
-            document.querySelectorAll('.channel-btn').forEach(function (btn) {
-                btn.classList.remove('active');
-            });
-
-            const activeBtn = Array.from(document.querySelectorAll('.channel-btn'))
-                .find(function (btn) {
-                    return btn.textContent.indexOf('ID: ' + channelId) !== -1;
-                });
-
-            if (activeBtn) {
-                activeBtn.classList.add('active');
-            }
-        }
-
-        function clearStream() {
-            document.getElementById('playerContainer').innerHTML =
-                '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#aaa; text-align: center;">' +
-                    '<div style="font-size: 14px;">📺</div>' +
-                    '<div style="font-size: 12px; margin-top: 10px;">Ingresa un Channel ID y pulsa "Cargar Canal"</div>' +
-                '</div>';
-            document.getElementById('playerTitle').textContent =
-                'Selecciona un canal para reproducir';
-            document.getElementById('channelId').value = '';
-            const status = document.getElementById('status');
-            status.style.display = 'none';
-            document.querySelectorAll('.channel-btn').forEach(function (btn) {
-                btn.classList.remove('active');
-            });
-        }
-
-        document.getElementById('channelId').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                loadChannel();
-            }
+    fetch('channels.json')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            allChannels = data;
+            showStatus('✓ ' + allChannels.length + ' canales cargados', 'success');
+        })
+        .catch(function(error) {
+            showStatus('Error cargando canales', 'error');
+            console.error(error);
         });
 
-        window.addEventListener('load', function () {
-            renderChannelsList();
-            showStatus('💡 Haz click en un canal o ingresa un ID', 'info');
+    function showStatus(msg, type) {
+        if (type === undefined) {
+            type = 'info';
+        }
+        var status = document.getElementById('status');
+        status.textContent = msg;
+        status.className = 'status ' + type;
+        status.style.display = 'block';
+        if (type !== 'error') {
+            setTimeout(function () {
+                status.style.display = 'none';
+            }, 6000);
+        }
+    }
+
+    function renderChannelsList(filterText) {
+        var list = document.getElementById('channelsList');
+        var text = (filterText || '').toLowerCase().trim();
+
+        if (!text) {
+            list.innerHTML = '<div style="color:#aaa; font-size:12px;">Empieza a escribir para buscar.</div>';
+            return;
+        }
+
+        var filtered = allChannels.filter(function (ch) {
+            return ch.name.toLowerCase().indexOf(text) !== -1 || ch.id.indexOf(text) !== -1;
         });
-    </script>
+
+        if (filtered.length === 0) {
+            list.innerHTML = '<div style="color:#aaa; font-size:12px;">No hay resultados.</div>';
+            return;
+        }
+
+        var limit = 50;
+        var toShow = filtered.slice(0, limit);
+        
+        list.innerHTML = toShow.map(function (ch) {
+            var safeName = ch.name.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+            return (
+                '<button class="channel-btn" onclick="selectChannel(\'' + ch.id + '\', \'' + ch.folder + '\')">' +
+                    '<span class="channel-name">' + ch.name + '</span>' +
+                    '<span class="channel-meta">ID: ' + ch.id + '</span>' +
+                '</button>'
+            );
+        }).join('');
+        
+        if (filtered.length > limit) {
+            list.innerHTML = '<div style="color:#aaa; font-size:12px; margin-bottom:10px;">Mostrando ' + limit + ' de ' + filtered.length + ' resultados</div>' + list.innerHTML;
+        }
+    }
+
+    function selectChannel(id, folder) {
+        document.getElementById('channelId').value = id;
+        document.getElementById('folderType').value = folder || 'stream';
+        
+        var selectedCh = allChannels.find(function(ch) { return ch.id === id; });
+        if (selectedCh) {
+            showStatus('Canal: ' + selectedCh.name, 'success');
+        }
+        
+        setTimeout(loadChannel, 300);
+    }
+
+    function loadChannel() {
+        var channelId = document.getElementById('channelId').value.trim();
+        var folderType = document.getElementById('folderType').value;
+
+        if (!channelId) {
+            showStatus('Por favor ingresa un Channel ID', 'error');
+            return;
+        }
+
+        if (!/^\d+$/.test(channelId)) {
+            showStatus('El Channel ID debe ser numérico', 'error');
+            return;
+        }
+
+        var streamUrl = 'https://dlhd.dad/' + folderType + '/stream-' + channelId + '.php';
+
+        showStatus('Cargando stream...', 'success');
+        document.getElementById('playerTitle').textContent = '📺 Canal #' + channelId + ' - ' + folderType;
+
+        var container = document.getElementById('playerContainer');
+        container.innerHTML = '<iframe src="' + streamUrl + '" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen allow="autoplay"></iframe>';
+    }
+
+    function clearStream() {
+        document.getElementById('playerContainer').innerHTML =
+            '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#aaa; text-align: center;">' +
+                '<div style="font-size: 14px;">📺</div>' +
+                '<div style="font-size: 12px; margin-top: 10px;">Busca un canal o ingresa un ID</div>' +
+            '</div>';
+        document.getElementById('playerTitle').textContent = 'Selecciona un canal para reproducir';
+        document.getElementById('channelId').value = '';
+        var status = document.getElementById('status');
+        status.style.display = 'none';
+    }
+
+    document.getElementById('channelId').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            loadChannel();
+        }
+    });
+
+    document.getElementById('searchChannel').addEventListener('input', function (e) {
+        renderChannelsList(e.target.value);
+    });
+</script>
 </body>
 </html>
