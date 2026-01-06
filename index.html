@@ -166,8 +166,48 @@
             .layout { grid-template-columns: 1fr; }
             .main-content { order: -1; }
         }
-
     </style>
+
+    <!-- Bloque de contraseña encriptada -->
+    <script>
+        const PASS_B64 = 'UHV0YVNldmlsbGEx';
+
+        function decodePass(b64) {
+            try {
+                return atob(b64);
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function pedirPassword() {
+            var realPass = decodePass(PASS_B64);
+            var maxIntentos = 3;
+            var intento = 0;
+            var ok = false;
+
+            while (intento < maxIntentos && !ok) {
+                var p = prompt('Introduce la contraseña para acceder:', '');
+                if (p === null) break;
+
+                if (p === realPass) {
+                    ok = true;
+                } else {
+                    intento++;
+                    alert('Contraseña incorrecta (' + intento + '/' + maxIntentos + ')');
+                }
+            }
+
+            if (!ok) {
+                document.body.innerHTML =
+                    '<div style="color:#fff;background:#000;height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;">' +
+                    'Acceso denegado' +
+                    '</div>';
+            }
+        }
+
+        window.addEventListener('load', pedirPassword);
+    </script>
 </head>
 <body>
 <header>
@@ -227,10 +267,17 @@
         .then(function(data) {
             allChannels = data;
             showStatus('✓ ' + allChannels.length + ' canales cargados', 'success');
+            
+            // Actualizar el mensaje de "Cargando canales..."
+            var list = document.getElementById('channelsList');
+            list.innerHTML = '<div style="color:#aaa; font-size:12px;">Empieza a escribir para buscar.</div>';
         })
         .catch(function(error) {
             showStatus('Error cargando canales', 'error');
             console.error(error);
+            
+            var list = document.getElementById('channelsList');
+            list.innerHTML = '<div style="color:#ff4444; font-size:12px;">Error al cargar canales.</div>';
         });
 
     function showStatus(msg, type) {
@@ -270,7 +317,6 @@
         var toShow = filtered.slice(0, limit);
         
         list.innerHTML = toShow.map(function (ch) {
-            var safeName = ch.name.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
             return (
                 '<button class="channel-btn" onclick="selectChannel(\'' + ch.id + '\', \'' + ch.folder + '\')">' +
                     '<span class="channel-name">' + ch.name + '</span>' +
