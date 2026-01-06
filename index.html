@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DaddyHD Stream Player - API Direct</title>
+    <title>DaddyHD STREAM PLAYER - API DIRECT</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -159,10 +159,51 @@
             .sidebar { order: -1; }
         }
     </style>
+
+    <!-- Bloque de contraseña ofuscada: PutaSevilla1 -> base64 -->
+    <script>
+        const PASS_B64 = 'UHV0YVNldmlsbGEx';
+
+        function decodePass(b64) {
+            try {
+                return atob(b64);
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function pedirPassword() {
+            const realPass = decodePass(PASS_B64);
+            const maxIntentos = 3;
+            let intento = 0;
+            let ok = false;
+
+            while (intento < maxIntentos && !ok) {
+                const p = prompt('Introduce la contraseña para acceder:', '');
+                if (p === null) break; // Cancelar
+
+                if (p === realPass) {
+                    ok = true;
+                } else {
+                    intento++;
+                    alert('Contraseña incorrecta (' + intento + '/' + maxIntentos + ')');
+                }
+            }
+
+            if (!ok) {
+                document.body.innerHTML =
+                    '<div style="color:#fff;background:#000;height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;">' +
+                    'Acceso denegado' +
+                    '</div>';
+            }
+        }
+
+        window.addEventListener('load', pedirPassword);
+    </script>
 </head>
 <body>
     <header>
-        <h1>📺 DaddyHD Stream Player - API Direct</h1>
+        <h1>📺 DaddyHD STREAM PLAYER - API DIRECT</h1>
     </header>
 
     <div class="container">
@@ -246,33 +287,35 @@
         function showStatus(msg, type = 'info') {
             const status = document.getElementById('status');
             status.textContent = msg;
-            status.className = `status ${type}`;
+            status.className = 'status ' + type;
             status.style.display = 'block';
             if (type !== 'error') {
-                setTimeout(() => { status.style.display = 'none'; }, 6000);
+                setTimeout(function () { status.style.display = 'none'; }, 6000);
             }
         }
 
         function renderChannelsList() {
             const list = document.getElementById('channelsList');
-            list.innerHTML = popularChannels.map(ch => `
-                <button class="channel-btn" onclick="selectChannel('${ch.id}', '${ch.name}')">
-                    <span style="color: #00a8ff;">ID: ${ch.id}</span><br>
-                    <span style="color: #aaa; font-size: 11px;">${ch.name}</span>
-                </button>
-            `).join('');
+            list.innerHTML = popularChannels.map(function (ch) {
+                return (
+                    '<button class="channel-btn" onclick="selectChannel(\'' + ch.id + '\', \'' + ch.name + '\')">' +
+                        '<span style="color: #00a8ff;">ID: ' + ch.id + '</span><br>' +
+                        '<span style="color: #aaa; font-size: 11px;">' + ch.name + '</span>' +
+                    '</button>'
+                );
+            }).join('');
         }
 
         function selectChannel(id, name) {
             document.getElementById('channelId').value = id;
-            showStatus(`✓ Canal seleccionado: ${name} (ID: ${id})`, 'success');
-            setTimeout(() => loadChannel(), 500);
+            showStatus('✓ Canal seleccionado: ' + name + ' (ID: ' + id + ')', 'success');
+            setTimeout(loadChannel, 500);
         }
 
         function loadChannel() {
             const channelId = document.getElementById('channelId').value.trim();
             const folderType = document.getElementById('folderType').value;
-            
+
             if (!channelId) {
                 showStatus('❌ Por favor ingresa un Channel ID', 'error');
                 return;
@@ -283,34 +326,58 @@
                 return;
             }
 
-            const streamUrl = `https://dlhd.dad/${folderType}/stream-${channelId}.php`;
-            
-            showStatus(`✓ Cargando stream...`, 'success');
-            document.getElementById('playerTitle').textContent = `📺 Canal #${channelId} - ${folderType}`;
-            
-            const container = document.getElementById('playerContainer');
-            container.innerHTML = `<iframe src="${streamUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen allow="autoplay"></iframe>`;
+            const streamUrl = 'https://dlhd.dad/' + folderType + '/stream-' + channelId + '.php';
 
-            document.querySelectorAll('.channel-btn').forEach(btn => btn.classList.remove('active'));
+            showStatus('✓ Cargando stream...', 'success');
+            document.getElementById('playerTitle').textContent =
+                '📺 Canal #' + channelId + ' - ' + folderType;
+
+            const container = document.getElementById('playerContainer');
+            container.innerHTML =
+                '<iframe ' +
+                    'src="' + streamUrl + '" ' +
+                    'style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" ' +
+                    'allowfullscreen ' +
+                    'allow="autoplay">' +
+                '</iframe>';
+
+            document.querySelectorAll('.channel-btn').forEach(function (btn) {
+                btn.classList.remove('active');
+            });
+
             const activeBtn = Array.from(document.querySelectorAll('.channel-btn'))
-                .find(btn => btn.textContent.includes(`ID: ${channelId}`));
-            if (activeBtn) activeBtn.classList.add('active');
+                .find(function (btn) {
+                    return btn.textContent.indexOf('ID: ' + channelId) !== -1;
+                });
+
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
         }
 
         function clearStream() {
-            document.getElementById('playerContainer').innerHTML = '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#aaa; text-align: center;"><div style="font-size: 14px;">📺</div><div style="font-size: 12px; margin-top: 10px;">Ingresa un Channel ID y pulsa "Cargar Canal"</div></div>';
-            document.getElementById('playerTitle').textContent = 'Selecciona un canal para reproducir';
+            document.getElementById('playerContainer').innerHTML =
+                '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#aaa; text-align: center;">' +
+                    '<div style="font-size: 14px;">📺</div>' +
+                    '<div style="font-size: 12px; margin-top: 10px;">Ingresa un Channel ID y pulsa "Cargar Canal"</div>' +
+                '</div>';
+            document.getElementById('playerTitle').textContent =
+                'Selecciona un canal para reproducir';
             document.getElementById('channelId').value = '';
             const status = document.getElementById('status');
             status.style.display = 'none';
-            document.querySelectorAll('.channel-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.channel-btn').forEach(function (btn) {
+                btn.classList.remove('active');
+            });
         }
 
-        document.getElementById('channelId').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') loadChannel();
+        document.getElementById('channelId').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                loadChannel();
+            }
         });
 
-        window.addEventListener('load', () => {
+        window.addEventListener('load', function () {
             renderChannelsList();
             showStatus('💡 Haz click en un canal o ingresa un ID', 'info');
         });
