@@ -1,0 +1,27 @@
+! Title: DaddyHD Anti-Popup Filter
+! Description: Bloquea dominios de spam y ventanas emergentes de streaming
+! Homepage: https://github.com/iframelive/iframe-web
+! Version: 1.0
+! Expires: 1 day
+
+! Dominios de publicidad/spam conocidos
+||popads.net^
+||popcash.net^
+||propellerads.com^
+||exoclick.com^
+||juicyads.com^
+||adcash.com^
+||adskeeper.com^
+||pushwoosh.com^
+||onesignal.com^
+||mgid.com^
+||outbrain.com^
+||taboola.com^
+||revcontent.com^
+||zedo.com^
+||doubleclick.net^
+||googleadservices.com^
+
+! Dominios específicos de streams (ajusta según lo que veas)
+||ads.dad^
+||tracker.dad^
