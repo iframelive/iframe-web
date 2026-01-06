@@ -36,3 +36,6 @@
 ||shiny-frost.proudtruthl4wu.workers.dev^
 ||alibaba.com^
 ||elcorteingles.es^
+||best.aliexpress.com^
+||youtube.com^
+||255md.com^
