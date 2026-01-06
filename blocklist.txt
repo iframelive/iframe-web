@@ -25,3 +25,8 @@
 ! Dominios específicos de streams (ajusta según lo que veas)
 ||ads.dad^
 ||tracker.dad^
+||chaturbate.com^
+||lpconttop.com^
+||www.youtube.com^
+||playeverlustinglife.space^
+||rg403.com^
